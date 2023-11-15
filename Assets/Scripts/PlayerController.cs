@@ -11,8 +11,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float _movementSpeed = 1f;
     [SerializeField] private bool _isRotateLerp = true;
     [SerializeField] private float _rotateSpeed = 5f;
+    [SerializeField] private bool _showGizmos = true;
 
     private void OnDrawGizmos() {
+        if (!_showGizmos) return;
         Gizmos.color = Color.green;
         Gizmos.DrawRay(this.transform.position, transform.right * 2);
     }
@@ -26,10 +28,17 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        HandlePlayerMovement();
+        HandlePlayerRotation();
+    }
+
+    private void HandlePlayerMovement() {
         _moveInput = _movement.ReadValue<Vector2>();
         _moveInput.Normalize();
-        gameObject.transform.Translate(_moveInput * _movementSpeed * Time.deltaTime);
+        gameObject.transform.Translate(_moveInput * _movementSpeed * Time.deltaTime, Space.World);
+    }
 
+    private void HandlePlayerRotation() {
         Vector3 mousePos = Mouse.current.position.ReadValue();
         Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(mousePos);
         Vector3 newDirection = mouseWorld - transform.position;

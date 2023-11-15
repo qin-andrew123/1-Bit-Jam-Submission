@@ -250,6 +250,7 @@ MonoBehaviour:
   _movementSpeed: 1
   _isRotateLerp: 0
   _rotateSpeed: 3
+  _showGizmos: 1
 --- !u!1 &1052807413
 GameObject:
   m_ObjectHideFlags: 0
