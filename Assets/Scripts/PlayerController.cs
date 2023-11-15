@@ -9,7 +9,14 @@ public class PlayerController : MonoBehaviour
     private InputAction _movement;
     [HideInInspector] public Vector2 _moveInput;
     [SerializeField] private float _movementSpeed = 1f;
-    
+    [SerializeField] private bool _isRotateLerp = true;
+    [SerializeField] private float _rotateSpeed = 5f;
+
+    private void OnDrawGizmos() {
+        Gizmos.color = Color.green;
+        Gizmos.DrawRay(this.transform.position, transform.right * 2);
+    }
+
     private void Start()
     {
         _inputSystem = new InputSystem();
@@ -21,8 +28,17 @@ public class PlayerController : MonoBehaviour
     {
         _moveInput = _movement.ReadValue<Vector2>();
         _moveInput.Normalize();
-
-        // Move that hoe
         gameObject.transform.Translate(_moveInput * _movementSpeed * Time.deltaTime);
+
+        Vector3 mousePos = Mouse.current.position.ReadValue();
+        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(mousePos);
+        Vector3 newDirection = mouseWorld - transform.position;
+        float angle = Mathf.Atan2(newDirection.y, newDirection.x) * Mathf.Rad2Deg;
+        Quaternion newRotationDirection = Quaternion.AngleAxis(angle, Vector3.forward);
+        if (_isRotateLerp)
+            transform.rotation = Quaternion.Slerp(transform.rotation, newRotationDirection, _rotateSpeed * Time.deltaTime);
+        else {
+            transform.rotation = newRotationDirection;
+        }
     }
 }
