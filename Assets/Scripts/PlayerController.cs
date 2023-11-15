@@ -21,7 +21,6 @@ public class PlayerController : MonoBehaviour
     {
         _moveInput = _movement.ReadValue<Vector2>();
         _moveInput.Normalize();
-
         // Move that hoe
         gameObject.transform.Translate(_moveInput * _movementSpeed * Time.deltaTime);
     }

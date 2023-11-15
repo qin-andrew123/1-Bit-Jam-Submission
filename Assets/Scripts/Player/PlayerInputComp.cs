@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,8 +11,7 @@ public class PlayerInputComp : MonoBehaviour
     [SerializeField]
     private float _skillCooldown = 3.0f;
     private float _timer = 0.0f;
-    //Get component for Ability
-
+    public event EventHandler OnLeftClick;
     void Start()
     {
         _timer = _skillCooldown;
@@ -29,8 +29,9 @@ public class PlayerInputComp : MonoBehaviour
         }
         else if (!_isAbilityUsed && Input.GetMouseButtonDown(0))
         {
-            Debug.Log("Ability is used");
+            OnLeftClick?.Invoke(this, EventArgs.Empty);
             _isAbilityUsed = true;
+            
         }
     }
 }
