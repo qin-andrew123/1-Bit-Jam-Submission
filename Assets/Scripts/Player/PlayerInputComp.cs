@@ -8,98 +8,84 @@ using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UIElements;
 
-public class PlayerInputComp : MonoBehaviour
-{
-    [SerializeField] private int _numRays;
+public class PlayerInputComp : MonoBehaviour {
+    [SerializeField] private int _numOfRaysOneSide = 30;
     [SerializeField] private float _skillCooldown = 3.0f;
-    [SerializeField] private float _fov;
-    [SerializeField] private float _castLength;
+    private float _fov;
+    [SerializeField] private float _castLength = 4f;
     [SerializeField] private LayerMask _mask;
 
-    private Vector3 _origin;
-    private float _startingAngle = 0.0f;
     private bool _isAbilityUsed = false;
     private float _timer = 0.0f;
-    private List<GameObject> _enemiesFound;
+    [SerializeField] private List<GameObject> _enemiesFound;
+
+    // for Debug
+    private float angle;
 
     /// <summary>
     /// Initialize vars
     /// </summary>
-    void Start()
-    {
+    void Start() {
         _timer = _skillCooldown;
         _enemiesFound = new List<GameObject>();
-        _origin = Vector3.zero;
     }
+
+    private void OnDrawGizmos() {
+        Gizmos.color = Color.red;
+        Gizmos.DrawRay(transform.position, Quaternion.Euler(0, 0, angle) * transform.right * _castLength);
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawRay(transform.position, Quaternion.Euler(0, 0, -angle) * transform.right * _castLength);
+    }
+
 
     /// <summary>
     /// Updates and casts rays after data is sent from PlayerController
     /// </summary>
-    private void LateUpdate()
-    {
-        _fov = GetComponentInChildren<Light2D>().pointLightOuterAngle;
-        float angle = _startingAngle;
-        float angleIncrease = _fov / _numRays;
-        if (!_isAbilityUsed && Input.GetMouseButtonDown(0))
-        {
-            for (int i = 0; i <= _numRays; i++)
-            {
-                float angleRad = angle * Mathf.Deg2Rad;
-                RaycastHit2D hit = Physics2D.Raycast(_origin, new Vector3(Mathf.Cos(angleRad), Mathf.Sin(angleRad)), _castLength, _mask);
-                if (hit.collider != null)
-                {
-                    if (!_enemiesFound.Contains(hit.collider.gameObject))
-                    {
-                        _enemiesFound.Add(hit.collider.gameObject);
+    private void LateUpdate() {
+        if (!_isAbilityUsed && Input.GetMouseButtonDown(0)) {
+            // Enemy kill logic
+            _enemiesFound.Clear();
+            _fov = GetComponentInChildren<Light2D>().pointLightOuterAngle;
+            float angleIncrease = _fov / _numOfRaysOneSide / 2.0f;
+            angle = 0.0f;
+            for (int i = 0; i < _numOfRaysOneSide; i++) {
+                RaycastHit2D RightHit = Physics2D.Raycast(transform.position, Quaternion.Euler(0, 0, angle) * transform.right, _castLength, _mask);
+                RaycastHit2D LeftHit = Physics2D.Raycast(transform.position, Quaternion.Euler(0, 0, -angle) * transform.right, _castLength, _mask);
+
+                if (RightHit.collider != null) {
+                    if (!_enemiesFound.Contains(RightHit.collider.gameObject)) {
+                        _enemiesFound.Add(RightHit.collider.gameObject);
                     }
                 }
-                angle -= angleIncrease;
+                if (LeftHit.collider != null) {
+                    if (!_enemiesFound.Contains(LeftHit.collider.gameObject)) {
+                        _enemiesFound.Add(LeftHit.collider.gameObject);
+                    }
+                }
+                angle += angleIncrease;
             }
             LightAbilityComp playerLight = GetComponentInChildren<LightAbilityComp>();
-            if(playerLight == null)
-            {
+            if (playerLight == null) {
                 Debug.Log("PLAYERABILITY LIGHT IS NULL");
-            }
-            else
-            {
+            } else {
                 playerLight.Clap();
             }
             _isAbilityUsed = true;
 
             //Do something with the enemies
-            for(int i = 0; i < _enemiesFound.Count; i++)
-            {
+            for (int i = 0; i < _enemiesFound.Count; i++) {
                 Debug.Log("enemy: " + _enemiesFound[i].gameObject.transform);
             }
-            _enemiesFound.Clear();
         }
     }
 
-    private void FixedUpdate()
-    {
-        if (_isAbilityUsed)
-        {
+    private void FixedUpdate() {
+        if (_isAbilityUsed) {
             _timer -= Time.fixedDeltaTime;
-            if(_timer <= 0 )
-            {
+            if (_timer <= 0) {
                 _isAbilityUsed = false;
                 _timer = _skillCooldown;
             }
         }
-    }
-    public void SetOrigin(Vector3 origin)
-    {
-        _origin = origin;
-    }
-    public void SetAimDirection(Vector3 aimDirection)
-    {
-        aimDirection.Normalize();
-        _startingAngle = Mathf.Atan2(aimDirection.y, aimDirection.x) * Mathf.Rad2Deg;
-        if(_startingAngle < 0 )
-        {
-            _startingAngle += 360.0f;
-        }
-
-        _startingAngle += _fov / 2f;
     }
 }
