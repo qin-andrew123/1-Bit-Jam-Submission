@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Assertions.Must;
 using UnityEngine.InputSystem;
@@ -9,7 +10,6 @@ using UnityEngine.UIElements;
 
 public class PlayerInputComp : MonoBehaviour
 {
-    [SerializeField][Tooltip("DO NOT MODIFIY THIS IN EDITOR")]
     private bool _isAbilityUsed = false;
     [SerializeField]
     private float _skillCooldown = 3.0f;
@@ -18,9 +18,47 @@ public class PlayerInputComp : MonoBehaviour
     private List<GameObject> _enemiesFound;
     [SerializeField] private int _numRays;
     [SerializeField] private float _castLength;
+    private Mesh mesh;
+
+    private float _fov;
     void Start()
     {
         _timer = _skillCooldown;
+        _enemiesFound = new List<GameObject>();
+        mesh = new Mesh();
+        GetComponent<MeshFilter>().mesh = mesh;
+
+        Vector3 origin = Vector3.zero;
+        float angle = 0f;
+        float angleIncrease = _fov / _numRays;
+
+        Vector3[] vertices = new Vector3[_numRays + 1 + 1];
+        Vector2[] uv = new Vector2[vertices.Length];
+        int[] triangles = new int[_numRays * 3];
+
+        vertices[0] = origin;
+        int vertexIndex = 1;
+        int triangleIndex = 1;
+        for(int i = 0; i <= _numRays; i++)
+        {
+            float angleRad = angle * Mathf.Deg2Rad;
+            Vector3 vertex = origin + new Vector3(Mathf.Cos(angleRad), Mathf.Sin(angleRad)) * _castLength;
+            vertices[vertexIndex] = vertex;
+
+            if(i > 0)
+            {
+                triangles[triangleIndex] = 0;
+                triangles[triangleIndex + 1] = vertexIndex -1;
+                triangles[triangleIndex + 2] = vertexIndex;
+
+                triangleIndex += 3;
+            }
+            ++vertexIndex;
+            angle -= angleIncrease;
+        }
+        mesh.vertices = vertices;
+        mesh.uv = uv;
+        mesh.triangles = triangles;
     }
     private void FixedUpdate()
     {
@@ -38,6 +76,7 @@ public class PlayerInputComp : MonoBehaviour
             OnLeftClick?.Invoke(this, EventArgs.Empty);
             _isAbilityUsed = true;
             SearchEnemies();
+            _enemiesFound.Clear();
         }
     }
 
@@ -46,29 +85,56 @@ public class PlayerInputComp : MonoBehaviour
         Light2D playerLight = GetComponentInChildren<Light2D>();
         float lightAngle = playerLight.pointLightOuterAngle / 2.0f;
         float angleIncrement = lightAngle / _numRays;
-        for(int i = 0; i <= _numRays; ++i)
+        for (int i = 0; i <= _numRays; ++i)
         {
-            float negativeCurrentAngle = -(i * angleIncrement);
-            float positiveCurrentAngle = i * angleIncrement;
+            
+            float currentAngle = i * angleIncrement; 
             Vector3 mouseToCenter = Input.mousePosition - transform.position;
             mouseToCenter.Normalize();
-            Vector3 negativeRay = mouseToCenter * negativeCurrentAngle;
-            Vector3 positiveRay = mouseToCenter * positiveCurrentAngle;
+
+            float negX = transform.position.x - Mathf.Sin(-currentAngle) * Mathf.Deg2Rad;
+            float negY = transform.position.y - Mathf.Cos(-currentAngle) * Mathf.Deg2Rad;
+            float posX = transform.position.x + Mathf.Sin(currentAngle) * Mathf.Deg2Rad;
+            float posY = transform.position.y + Mathf.Cos(currentAngle) * Mathf.Deg2Rad;
+            negativeRay = new Vector2(negX, negY);
+            negativeRay.Normalize();
+            positiveRay = new Vector2(posX, posY);
+            positiveRay.Normalize();
+            
             RaycastHit2D negativeHit = Physics2D.Raycast(transform.position, negativeRay, _castLength);
             RaycastHit2D positiveHit = Physics2D.Raycast(transform.position, positiveRay, _castLength);
-            if(negativeHit.collider != null && negativeHit.rigidbody.CompareTag("Enemy"))
+            if (negativeHit && negativeHit.rigidbody.CompareTag("Enemy"))
             {
-                _enemiesFound.Add(negativeHit.collider.gameObject);
+                if(!_enemiesFound.Contains(negativeHit.collider.gameObject))
+                {
+                    _enemiesFound.Add(negativeHit.collider.gameObject);
+                    Debug.Log("Negative Ray Found enemy. NegativeRay: " + negativeRay);
+                    Debug.Log("Forward: " + mouseToCenter);
+                }
             }
-            if (positiveHit.collider != null && positiveHit.rigidbody.CompareTag("Enemy"))
+            if (positiveHit && positiveHit.rigidbody.CompareTag("Enemy"))
             {
-                _enemiesFound.Add(positiveHit.collider.gameObject);
-            }
+                if(!_enemiesFound.Contains(positiveHit.collider.gameObject))
+                {
+                    Debug.Log("PositiveRay Found enemy: " + positiveRay);
+                    _enemiesFound.Add(positiveHit.collider.gameObject);
+                    Debug.Log("Forward: " + mouseToCenter);
+                }
+            }   
         }
 
-        for(int i = 0; i < _enemiesFound.Count; ++i)
+        for (int i = 0; i < _enemiesFound.Count; ++i)
         {
             Debug.Log("Enemy in List: " + _enemiesFound[i].gameObject.transform.position);
         }
     }
+
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawRay(transform.position, negativeRay * _castLength);
+        Gizmos.DrawRay(transform.position, positiveRay * _castLength);
+    }
+
 }
