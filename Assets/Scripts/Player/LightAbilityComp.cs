@@ -11,21 +11,13 @@ public class LightAbilityComp : MonoBehaviour
     void Start()
     {
         _lightComp = GetComponent<Light2D>();
-        PlayerInputComp _playerInputComp = GetComponentInParent<PlayerInputComp>();
-        _playerInputComp.OnLeftClick += Clap;
         _outerAngle = _lightComp.pointLightOuterAngle;
     }
 
-    private void Clap(object sender, EventArgs e)
+    public void Clap()
     {
-        Debug.Log("Ability is used");
+        Debug.Log("Light Clapped");
         _outerAngle -= 5.0f;
         _lightComp.pointLightOuterAngle = _outerAngle;
-    }
-
-    private void OnDestroy()
-    {
-        PlayerInputComp _playerInputComp = GetComponentInParent<PlayerInputComp>();
-        _playerInputComp.OnLeftClick -= Clap;
     }
 }

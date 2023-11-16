@@ -11,58 +11,60 @@ using UnityEngine.UIElements;
 public class PlayerInputComp : MonoBehaviour
 {
     private bool _isAbilityUsed = false;
-    [SerializeField]
-    private float _skillCooldown = 3.0f;
+    [SerializeField] private float _skillCooldown = 3.0f;
     private float _timer = 0.0f;
-    public event EventHandler OnLeftClick;
-    private List<GameObject> _enemiesFound;
+    [SerializeField] private List<GameObject> _enemiesFound;
     [SerializeField] private int _numRays;
     [SerializeField] private float _castLength;
-    private Mesh mesh;
-
-    private float _fov;
+    [SerializeField] private LayerMask _mask;
+    [SerializeField] private float _fov;
+    private Vector3 _origin;
+    private float _startingAngle = 0.0f;
     void Start()
     {
         _timer = _skillCooldown;
         _enemiesFound = new List<GameObject>();
-        mesh = new Mesh();
-        GetComponent<MeshFilter>().mesh = mesh;
-
-        Vector3 origin = Vector3.zero;
-        float angle = 0f;
+        _origin = Vector3.zero;
+        _fov = GetComponentInChildren<Light2D>().pointLightOuterAngle;
+    }
+    private void LateUpdate()
+    {
+        float angle = _startingAngle;
         float angleIncrease = _fov / _numRays;
-
-        Vector3[] vertices = new Vector3[_numRays + 1 + 1];
-        Vector2[] uv = new Vector2[vertices.Length];
-        int[] triangles = new int[_numRays * 3];
-
-        vertices[0] = origin;
-        int vertexIndex = 1;
-        int triangleIndex = 1;
-        for(int i = 0; i <= _numRays; i++)
+        if (!_isAbilityUsed && Input.GetMouseButtonDown(0))
         {
-            float angleRad = angle * Mathf.Deg2Rad;
-            Vector3 vertex = origin + new Vector3(Mathf.Cos(angleRad), Mathf.Sin(angleRad)) * _castLength;
-            vertices[vertexIndex] = vertex;
-
-            if(i > 0)
+            for (int i = 0; i <= _numRays; i++)
             {
-                triangles[triangleIndex] = 0;
-                triangles[triangleIndex + 1] = vertexIndex -1;
-                triangles[triangleIndex + 2] = vertexIndex;
-
-                triangleIndex += 3;
+                float angleRad = angle * Mathf.Deg2Rad;
+                RaycastHit2D hit = Physics2D.Raycast(_origin, new Vector3(Mathf.Cos(angleRad), Mathf.Sin(angleRad)), _castLength, _mask);
+                if (hit.collider != null)
+                {
+                    if (!_enemiesFound.Contains(hit.collider.gameObject))
+                    {
+                        _enemiesFound.Add(hit.collider.gameObject);
+                        Debug.Log("Enemy Found: " + hit.point);
+                    }
+                }
+                angle -= angleIncrease;
             }
-            ++vertexIndex;
-            angle -= angleIncrease;
+            LightAbilityComp playerLight = GetComponentInChildren<LightAbilityComp>();
+            if(playerLight == null)
+            {
+                Debug.Log("PLAYERABILITY LIGHT IS NULL");
+            }
+            else
+            {
+                playerLight.Clap();
+            }
+            _isAbilityUsed = true;
+
+            //Do something with the enemies
+            _enemiesFound.Clear();
         }
-        mesh.vertices = vertices;
-        mesh.uv = uv;
-        mesh.triangles = triangles;
     }
     private void FixedUpdate()
     {
-        if(_isAbilityUsed)
+        if (_isAbilityUsed)
         {
             _timer -= Time.fixedDeltaTime;
             if(_timer <= 0 )
@@ -71,70 +73,20 @@ public class PlayerInputComp : MonoBehaviour
                 _timer = _skillCooldown;
             }
         }
-        else if (!_isAbilityUsed && Input.GetMouseButtonDown(0))
-        {
-            OnLeftClick?.Invoke(this, EventArgs.Empty);
-            _isAbilityUsed = true;
-            SearchEnemies();
-            _enemiesFound.Clear();
-        }
     }
-
-    private void SearchEnemies()
+    public void SetOrigin(Vector3 origin)
     {
-        Light2D playerLight = GetComponentInChildren<Light2D>();
-        float lightAngle = playerLight.pointLightOuterAngle / 2.0f;
-        float angleIncrement = lightAngle / _numRays;
-        for (int i = 0; i <= _numRays; ++i)
-        {
-            
-            float currentAngle = i * angleIncrement; 
-            Vector3 mouseToCenter = Input.mousePosition - transform.position;
-            mouseToCenter.Normalize();
-
-            float negX = transform.position.x - Mathf.Sin(-currentAngle) * Mathf.Deg2Rad;
-            float negY = transform.position.y - Mathf.Cos(-currentAngle) * Mathf.Deg2Rad;
-            float posX = transform.position.x + Mathf.Sin(currentAngle) * Mathf.Deg2Rad;
-            float posY = transform.position.y + Mathf.Cos(currentAngle) * Mathf.Deg2Rad;
-            negativeRay = new Vector2(negX, negY);
-            negativeRay.Normalize();
-            positiveRay = new Vector2(posX, posY);
-            positiveRay.Normalize();
-            
-            RaycastHit2D negativeHit = Physics2D.Raycast(transform.position, negativeRay, _castLength);
-            RaycastHit2D positiveHit = Physics2D.Raycast(transform.position, positiveRay, _castLength);
-            if (negativeHit && negativeHit.rigidbody.CompareTag("Enemy"))
-            {
-                if(!_enemiesFound.Contains(negativeHit.collider.gameObject))
-                {
-                    _enemiesFound.Add(negativeHit.collider.gameObject);
-                    Debug.Log("Negative Ray Found enemy. NegativeRay: " + negativeRay);
-                    Debug.Log("Forward: " + mouseToCenter);
-                }
-            }
-            if (positiveHit && positiveHit.rigidbody.CompareTag("Enemy"))
-            {
-                if(!_enemiesFound.Contains(positiveHit.collider.gameObject))
-                {
-                    Debug.Log("PositiveRay Found enemy: " + positiveRay);
-                    _enemiesFound.Add(positiveHit.collider.gameObject);
-                    Debug.Log("Forward: " + mouseToCenter);
-                }
-            }   
-        }
-
-        for (int i = 0; i < _enemiesFound.Count; ++i)
-        {
-            Debug.Log("Enemy in List: " + _enemiesFound[i].gameObject.transform.position);
-        }
+        _origin = origin;
     }
-
-
-    private void OnDrawGizmos()
+    public void SetAimDirection(Vector3 aimDirection)
     {
-        Gizmos.color = Color.red;
-        Gizmos.DrawRay(transform.position, negativeRay * _castLength);
-        Gizmos.DrawRay(transform.position, positiveRay * _castLength);
-    }
+        aimDirection.Normalize();
+        _startingAngle = Mathf.Atan2(aimDirection.y, aimDirection.x) * Mathf.Rad2Deg;
+        if(_startingAngle < 0 )
+        {
+            _startingAngle += 360.0f;
+        }
 
+        _startingAngle -= _fov / 2.0f - 90.0f;
+    }
 }
