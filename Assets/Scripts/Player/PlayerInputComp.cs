@@ -10,25 +10,34 @@ using UnityEngine.UIElements;
 
 public class PlayerInputComp : MonoBehaviour
 {
-    private bool _isAbilityUsed = false;
-    [SerializeField] private float _skillCooldown = 3.0f;
-    private float _timer = 0.0f;
-    [SerializeField] private List<GameObject> _enemiesFound;
     [SerializeField] private int _numRays;
+    [SerializeField] private float _skillCooldown = 3.0f;
+    [SerializeField] private float _fov;
     [SerializeField] private float _castLength;
     [SerializeField] private LayerMask _mask;
-    [SerializeField] private float _fov;
+
     private Vector3 _origin;
     private float _startingAngle = 0.0f;
+    private bool _isAbilityUsed = false;
+    private float _timer = 0.0f;
+    private List<GameObject> _enemiesFound;
+
+    /// <summary>
+    /// Initialize vars
+    /// </summary>
     void Start()
     {
         _timer = _skillCooldown;
         _enemiesFound = new List<GameObject>();
         _origin = Vector3.zero;
-        _fov = GetComponentInChildren<Light2D>().pointLightOuterAngle;
     }
+
+    /// <summary>
+    /// Updates and casts rays after data is sent from PlayerController
+    /// </summary>
     private void LateUpdate()
     {
+        _fov = GetComponentInChildren<Light2D>().pointLightOuterAngle;
         float angle = _startingAngle;
         float angleIncrease = _fov / _numRays;
         if (!_isAbilityUsed && Input.GetMouseButtonDown(0))
@@ -42,7 +51,6 @@ public class PlayerInputComp : MonoBehaviour
                     if (!_enemiesFound.Contains(hit.collider.gameObject))
                     {
                         _enemiesFound.Add(hit.collider.gameObject);
-                        Debug.Log("Enemy Found: " + hit.point);
                     }
                 }
                 angle -= angleIncrease;
@@ -59,9 +67,14 @@ public class PlayerInputComp : MonoBehaviour
             _isAbilityUsed = true;
 
             //Do something with the enemies
+            for(int i = 0; i < _enemiesFound.Count; i++)
+            {
+                Debug.Log("enemy: " + _enemiesFound[i].gameObject.transform);
+            }
             _enemiesFound.Clear();
         }
     }
+
     private void FixedUpdate()
     {
         if (_isAbilityUsed)
@@ -87,6 +100,6 @@ public class PlayerInputComp : MonoBehaviour
             _startingAngle += 360.0f;
         }
 
-        _startingAngle -= _fov / 2.0f - 90.0f;
+        _startingAngle += _fov / 2f;
     }
 }
