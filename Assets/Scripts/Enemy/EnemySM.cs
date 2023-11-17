@@ -8,6 +8,7 @@ public class EnemySM : StateMachine
 
     [HideInInspector] public EnemyIdle idleState;
     [HideInInspector] public EnemyMoving movingState;
+    [HideInInspector] public EnemyDie dieState;
     [SerializeField] private float _moveSpeed;
     [SerializeField] private float _time = 3.0f;
     private bool _hasCollided = false;
@@ -17,6 +18,7 @@ public class EnemySM : StateMachine
     {
         idleState = new EnemyIdle(this);
         movingState = new EnemyMoving(this, _moveSpeed);
+        dieState = new EnemyDie(this);
     }
     protected override BaseState GetInitialState()
     {
@@ -58,5 +60,10 @@ public class EnemySM : StateMachine
             _hasCollided = true;
             ChangeState(idleState);
         }
+    }
+
+    private void OnDestroy()
+    {
+        
     }
 }

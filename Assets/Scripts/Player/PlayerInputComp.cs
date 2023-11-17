@@ -11,13 +11,12 @@ using UnityEngine.UIElements;
 public class PlayerInputComp : MonoBehaviour {
     [SerializeField] private int _numOfRaysOneSide = 30;
     [SerializeField] private float _skillCooldown = 3.0f;
-    private float _fov;
     [SerializeField] private float _castLength = 4f;
     [SerializeField] private LayerMask _mask;
-
+    [SerializeField] private List<GameObject> _enemiesFound;
+    private float _fov;
     private bool _isAbilityUsed = false;
     private float _timer = 0.0f;
-    [SerializeField] private List<GameObject> _enemiesFound;
 
     // for Debug
     private float angle;
@@ -43,8 +42,6 @@ public class PlayerInputComp : MonoBehaviour {
     /// </summary>
     private void LateUpdate() {
         if (!_isAbilityUsed && Input.GetMouseButtonDown(0)) {
-            // Enemy kill logic
-            _enemiesFound.Clear();
             _fov = GetComponentInChildren<Light2D>().pointLightOuterAngle;
             float angleIncrease = _fov / _numOfRaysOneSide / 2.0f;
             angle = 0.0f;
@@ -68,15 +65,22 @@ public class PlayerInputComp : MonoBehaviour {
             if (playerLight == null) {
                 Debug.Log("PLAYERABILITY LIGHT IS NULL");
             } else {
-                playerLight.Clap();
+                playerLight.Clap(5.0f); // Shrink amount
             }
             _isAbilityUsed = true;
 
             //Do something with the enemies
-            for (int i = 0; i < _enemiesFound.Count; i++) {
-                Debug.Log("enemy: " + _enemiesFound[i].gameObject.transform);
-            }
+            KillEnemies();
         }
+    }
+
+    private void KillEnemies()
+    {
+        for(int i = 0; i < _enemiesFound.Count; ++i)
+        {
+            Destroy(_enemiesFound[i]);
+        }
+        _enemiesFound.Clear();
     }
 
     private void FixedUpdate() {
@@ -87,5 +91,14 @@ public class PlayerInputComp : MonoBehaviour {
                 _timer = _skillCooldown;
             }
         }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(collision.collider != null && collision.collider.CompareTag("Enemy"))
+        {
+            LightAbilityComp playerLight = GetComponentInChildren<LightAbilityComp>();
+            playerLight.Clap(10.0f);
+        }    
     }
 }

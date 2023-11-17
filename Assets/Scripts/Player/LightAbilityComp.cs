@@ -8,8 +8,6 @@ public class LightAbilityComp : MonoBehaviour
 {
     //This is for debugging feel free to remove this SF 
     [SerializeField] private FOVMeshComp _fovMeshComp;
-    [SerializeField] private float decreaseAngle = 5.0f;
-    [SerializeField] private float shrinkTime = 2.0f;
     private Light2D _lightComp;
     private float _outerAngle;
     
@@ -19,12 +17,12 @@ public class LightAbilityComp : MonoBehaviour
         _outerAngle = _lightComp.pointLightOuterAngle;
     }
 
-    public void Clap()
+    public void Clap(float decreaseAmount)
     {
         Debug.Log("Light Clapped");
-        _outerAngle -= decreaseAngle;
+        _outerAngle -= decreaseAmount;
         //_lightComp.pointLightOuterAngle = Mathf.SmoothStep(_lightComp.pointLightOuterAngle, _outerAngle, 1f);
-        StartCoroutine(ShrinkLight(shrinkTime));
+        StartCoroutine(ShrinkLight(2.0f));
         if (_fovMeshComp != null)
             _fovMeshComp.SetFOV(_outerAngle);
     }
@@ -36,5 +34,10 @@ public class LightAbilityComp : MonoBehaviour
             elapsedTime += Time.deltaTime;
             yield return null;
         }
+    }
+
+    public float GetOuterAngle()
+    {
+        return _outerAngle;
     }
 }
