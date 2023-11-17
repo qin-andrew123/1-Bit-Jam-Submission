@@ -40,10 +40,10 @@ public class EnemySpawner : MonoBehaviour
         float xMax = transform.position.x + _maxRadius;
         float yMin = transform.position.y - _maxRadius;
         float yMax = transform.position.y + _maxRadius;
-        Vector2 location = new Vector2(Random.Range(xMin, xMax), Random.Range(yMin, yMax));
+        float xVal = Random.Range( xMin, xMax );
+        float yVal = Random.Range( yMin, yMax );
 
-        _spawnedEnemies.Add(Instantiate(_prefab, new Vector3(location.x, location.y, 0), Quaternion.identity));
-        
+        _spawnedEnemies.Add(Instantiate(_prefab, new Vector3(xVal, yVal, 0), Quaternion.identity));
     }
     private void OnDrawGizmos()
     {
