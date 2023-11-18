@@ -11,7 +11,9 @@ public class TreeShaderPivot : MonoBehaviour
     //public float maxDis;
     void Start()
     {
-        
+        GameObject curPlayer = GameObject.FindGameObjectWithTag("Player");
+        if (curPlayer != null)
+            player = curPlayer;
     }
 
     // Update is called once per frame
