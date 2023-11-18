@@ -14,6 +14,7 @@ public class PlayerInputComp : MonoBehaviour {
     [SerializeField] private float _castLength = 4f;
     [SerializeField] private LayerMask _mask;
     [SerializeField] private List<GameObject> _enemiesFound;
+    [SerializeField] private float ShrinkAngleWhenClap = 5f;
     private float _fov;
     private bool _isAbilityUsed = false;
     private float _timer = 0.0f;
@@ -46,17 +47,23 @@ public class PlayerInputComp : MonoBehaviour {
             float angleIncrease = _fov / _numOfRaysOneSide / 2.0f;
             angle = 0.0f;
             for (int i = 0; i < _numOfRaysOneSide; i++) {
-                RaycastHit2D RightHit = Physics2D.Raycast(transform.position, Quaternion.Euler(0, 0, angle) * transform.right, _castLength, _mask);
-                RaycastHit2D LeftHit = Physics2D.Raycast(transform.position, Quaternion.Euler(0, 0, -angle) * transform.right, _castLength, _mask);
+                RaycastHit2D[] RightHit = Physics2D.RaycastAll(transform.position, Quaternion.Euler(0, 0, angle) * transform.right, _castLength, _mask);
+                RaycastHit2D[] LeftHit = Physics2D.RaycastAll(transform.position, Quaternion.Euler(0, 0, -angle) * transform.right, _castLength, _mask);
 
-                if (RightHit.collider != null) {
-                    if (!_enemiesFound.Contains(RightHit.collider.gameObject)) {
-                        _enemiesFound.Add(RightHit.collider.gameObject);
+                for (int j = 0; j < RightHit.Length; j++) {
+                    RaycastHit2D hit = RightHit[j];
+                    if (hit.collider != null) {
+                        if (!_enemiesFound.Contains(hit.collider.gameObject)) {
+                            _enemiesFound.Add(hit.collider.gameObject);
+                        }
                     }
                 }
-                if (LeftHit.collider != null) {
-                    if (!_enemiesFound.Contains(LeftHit.collider.gameObject)) {
-                        _enemiesFound.Add(LeftHit.collider.gameObject);
+                for (int j = 0; j < LeftHit.Length; j++) {
+                    RaycastHit2D hit = LeftHit[j];
+                    if (hit.collider != null) {
+                        if (!_enemiesFound.Contains(hit.collider.gameObject)) {
+                            _enemiesFound.Add(hit.collider.gameObject);
+                        }
                     }
                 }
                 angle += angleIncrease;
@@ -65,19 +72,18 @@ public class PlayerInputComp : MonoBehaviour {
             if (playerLight == null) {
                 Debug.Log("PLAYERABILITY LIGHT IS NULL");
             } else {
-                playerLight.Clap(5.0f); // Shrink amount
+                playerLight.Clap(ShrinkAngleWhenClap); // Shrink amount
             }
             _isAbilityUsed = true;
 
             //Do something with the enemies
             KillEnemies();
+
         }
     }
 
-    private void KillEnemies()
-    {
-        for(int i = 0; i < _enemiesFound.Count; ++i)
-        {
+    private void KillEnemies() {
+        for (int i = 0; i < _enemiesFound.Count; ++i) {
             Destroy(_enemiesFound[i]);
         }
         _enemiesFound.Clear();
@@ -91,14 +97,5 @@ public class PlayerInputComp : MonoBehaviour {
                 _timer = _skillCooldown;
             }
         }
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if(collision.collider != null && collision.collider.CompareTag("Enemy"))
-        {
-            LightAbilityComp playerLight = GetComponentInChildren<LightAbilityComp>();
-            playerLight.Clap(10.0f);
-        }    
     }
 }

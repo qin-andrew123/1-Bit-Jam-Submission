@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 2344382841592757638}
   - component: {fileID: 1429734550759154696}
   - component: {fileID: 5956898557877580915}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -33,6 +33,7 @@ Transform:
   m_Children:
   - {fileID: 3357377672138900345}
   - {fileID: 3517615767478137545}
+  - {fileID: 4255112609119866432}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1429734550759154696
@@ -49,8 +50,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _moveInput: {x: 0, y: 0}
   _movementSpeed: 1
-  _isRotateLerp: 0
-  _rotateSpeed: 3
+  _isRotateLerp: 1
+  _rotateSpeed: 5
   _showGizmos: 1
 --- !u!114 &5956898557877580915
 MonoBehaviour:
@@ -65,12 +66,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _numOfRaysOneSide: 30
-  _skillCooldown: 3
-  _castLength: 10
+  _skillCooldown: 2
+  _castLength: 10.5
   _mask:
     serializedVersion: 2
     m_Bits: 64
   _enemiesFound: []
+  ShrinkAngleWhenClap: 1
 --- !u!1 &4743493484425121895
 GameObject:
   m_ObjectHideFlags: 0
@@ -81,7 +83,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3357377672138900345}
   - component: {fileID: 553067628589012393}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: PlayerVisual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -166,7 +168,7 @@ GameObject:
   - component: {fileID: 3517615767478137545}
   - component: {fileID: 6067204051194694895}
   - component: {fileID: 1104469771161754819}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Light 2D
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -225,9 +227,9 @@ MonoBehaviour:
     m_Center: {x: 0, y: -0.00000011920929, z: 0}
     m_Extent: {x: 0.9985302, y: 0.99853027, z: 0}
   m_PointLightInnerAngle: 0
-  m_PointLightOuterAngle: 90
+  m_PointLightOuterAngle: 270
   m_PointLightInnerRadius: 0
-  m_PointLightOuterRadius: 15
+  m_PointLightOuterRadius: 10.5
   m_ShapeLightParametricSides: 5
   m_ShapeLightParametricAngleOffset: 0
   m_ShapeLightParametricRadius: 1
@@ -251,5 +253,97 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _fovMeshComp: {fileID: 0}
-  decreaseAngle: 5
-  shrinkTime: 2
+  ShrinkTime: 1.9
+--- !u!1 &8327046772288170238
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4255112609119866432}
+  - component: {fileID: 1623461161960992805}
+  - component: {fileID: 1954189065785254839}
+  m_Layer: 7
+  m_Name: Collider
+  m_TagString: Player
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4255112609119866432
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8327046772288170238}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2344382841592757638}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!61 &1623461161960992805
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8327046772288170238}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0.026014492, y: -0.001858145}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 0.35706928, y: 0.5577529}
+  m_EdgeRadius: 0
+--- !u!114 &1954189065785254839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8327046772288170238}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2d8ab324c3fa3a41a6fe78268de2f45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _lightComp: {fileID: 1104469771161754819}
+  ShrinkAngleWhenTouched: 5
+  RadiusToDestroyEnemies: 0
