@@ -167,7 +167,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65d4d25f7e474194ca1dbe88a99dd37d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxRadius: 0.5
+  _maxRadius: 2
   _spawnTime: 3
   _prefab: {fileID: 4840837040517316674, guid: 348631b61904cb84a8bd5807139db586, type: 3}
   _spawnCount: 4

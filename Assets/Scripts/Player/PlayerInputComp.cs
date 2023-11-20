@@ -14,9 +14,14 @@ public class PlayerInputComp : MonoBehaviour {
     [SerializeField] private float _castLength = 4f;
     [SerializeField] private LayerMask _mask;
     [SerializeField] private List<GameObject> _enemiesFound;
+    [SerializeField] private float ShrinkAngleWhenClap = 5f;
     private float _fov;
     private bool _isAbilityUsed = false;
     private float _timer = 0.0f;
+    private Light2D _light;
+    [SerializeField] private GameObject hintText;
+    [SerializeField] private AudioManager audioManager;
+
 
     // for Debug
     private float angle;
@@ -27,6 +32,7 @@ public class PlayerInputComp : MonoBehaviour {
     void Start() {
         _timer = _skillCooldown;
         _enemiesFound = new List<GameObject>();
+        _light = GetComponentInChildren<Light2D>();
     }
 
     private void OnDrawGizmos() {
@@ -42,21 +48,28 @@ public class PlayerInputComp : MonoBehaviour {
     /// </summary>
     private void LateUpdate() {
         if (!_isAbilityUsed && Input.GetMouseButtonDown(0)) {
-            _fov = GetComponentInChildren<Light2D>().pointLightOuterAngle;
+            audioManager.Play("Flashlight");
+            _fov = _light.pointLightOuterAngle;
             float angleIncrease = _fov / _numOfRaysOneSide / 2.0f;
             angle = 0.0f;
             for (int i = 0; i < _numOfRaysOneSide; i++) {
-                RaycastHit2D RightHit = Physics2D.Raycast(transform.position, Quaternion.Euler(0, 0, angle) * transform.right, _castLength, _mask);
-                RaycastHit2D LeftHit = Physics2D.Raycast(transform.position, Quaternion.Euler(0, 0, -angle) * transform.right, _castLength, _mask);
+                RaycastHit2D[] RightHit = Physics2D.RaycastAll(transform.position, Quaternion.Euler(0, 0, angle) * transform.right, _castLength, _mask);
+                RaycastHit2D[] LeftHit = Physics2D.RaycastAll(transform.position, Quaternion.Euler(0, 0, -angle) * transform.right, _castLength, _mask);
 
-                if (RightHit.collider != null) {
-                    if (!_enemiesFound.Contains(RightHit.collider.gameObject)) {
-                        _enemiesFound.Add(RightHit.collider.gameObject);
+                for (int j = 0; j < RightHit.Length; j++) {
+                    RaycastHit2D hit = RightHit[j];
+                    if (hit.collider != null) {
+                        if (!_enemiesFound.Contains(hit.collider.gameObject)) {
+                            _enemiesFound.Add(hit.collider.gameObject);
+                        }
                     }
                 }
-                if (LeftHit.collider != null) {
-                    if (!_enemiesFound.Contains(LeftHit.collider.gameObject)) {
-                        _enemiesFound.Add(LeftHit.collider.gameObject);
+                for (int j = 0; j < LeftHit.Length; j++) {
+                    RaycastHit2D hit = LeftHit[j];
+                    if (hit.collider != null) {
+                        if (!_enemiesFound.Contains(hit.collider.gameObject)) {
+                            _enemiesFound.Add(hit.collider.gameObject);
+                        }
                     }
                 }
                 angle += angleIncrease;
@@ -65,21 +78,25 @@ public class PlayerInputComp : MonoBehaviour {
             if (playerLight == null) {
                 Debug.Log("PLAYERABILITY LIGHT IS NULL");
             } else {
-                playerLight.Clap(5.0f); // Shrink amount
+                _light.gameObject.SetActive(false);
+                Invoke("EnableLight", 0.3f);
+                playerLight.Clap(ShrinkAngleWhenClap); // Shrink amount
+                _light.pointLightOuterAngle = playerLight.GetOuterAngle();
             }
             _isAbilityUsed = true;
 
             //Do something with the enemies
             KillEnemies();
+
         }
     }
 
-    private void KillEnemies()
-    {
-        for(int i = 0; i < _enemiesFound.Count; ++i)
-        {
+    private void KillEnemies() {
+        for (int i = 0; i < _enemiesFound.Count; ++i) {
             Destroy(_enemiesFound[i]);
+            GameManager.EnemiesDestroyedByAttack++;
         }
+        Debug.Log("EnemiesDestroyedByAttack: " + GameManager.EnemiesDestroyedByAttack);
         _enemiesFound.Clear();
     }
 
@@ -91,14 +108,14 @@ public class PlayerInputComp : MonoBehaviour {
                 _timer = _skillCooldown;
             }
         }
+        if (_isAbilityUsed) {
+            hintText.SetActive(false);
+        } else {
+            hintText.SetActive(true);
+        }
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if(collision.collider != null && collision.collider.CompareTag("Enemy"))
-        {
-            LightAbilityComp playerLight = GetComponentInChildren<LightAbilityComp>();
-            playerLight.Clap(10.0f);
-        }    
+    private void EnableLight() {
+        _light.gameObject.SetActive(true);
     }
 }

@@ -6,10 +6,13 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/_Scenes/AndyTestScene.unity
-    guid: 8c9cfa26abfee488c85f1582747f6a02
+    path: Assets/_Scenes/StartScene.unity
+    guid: 74555700c52186f49afee9d9d3f05d6c
   - enabled: 1
-    path: Assets/_Scenes/UtopiaTestScene.unity
+    path: Assets/_Scenes/GameScene.unity
     guid: a521dcbf692f00642a31d4ccfea30312
+  - enabled: 1
+    path: Assets/_Scenes/EndScene.unity
+    guid: dcb2e31ce6fcac44ca7cbc1ab823bd7c
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 361c388debe9342498d6128798a6ab2d, type: 2}

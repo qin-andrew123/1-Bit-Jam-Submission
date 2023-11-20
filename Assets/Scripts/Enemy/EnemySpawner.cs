@@ -45,9 +45,9 @@ public class EnemySpawner : MonoBehaviour
 
         _spawnedEnemies.Add(Instantiate(_prefab, new Vector3(xVal, yVal, 0), Quaternion.identity));
     }
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawLine(transform.position, transform.right * _maxRadius);
-    }
+    //private void OnDrawGizmos()
+    //{
+    //    Gizmos.color = Color.yellow;
+    //    Gizmos.DrawWireSphere(transform.position, _maxRadius);
+    //}
 }
