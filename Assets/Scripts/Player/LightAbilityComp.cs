@@ -26,7 +26,7 @@ public class LightAbilityComp : MonoBehaviour
         _outerAngle -= decreaseAmount;
         _outerAngle = Mathf.Clamp(_outerAngle, 0f, 360f);
         //_lightComp.pointLightOuterAngle = Mathf.SmoothStep(_lightComp.pointLightOuterAngle, _outerAngle, 1f);
-        StartCoroutine(ShrinkLight(shrinkTime));
+        //StartCoroutine(ShrinkLight(shrinkTime));
         if (_fovMeshComp != null)
             _fovMeshComp.SetFOV(_outerAngle);
     }

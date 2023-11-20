@@ -18,6 +18,10 @@ public class PlayerInputComp : MonoBehaviour {
     private float _fov;
     private bool _isAbilityUsed = false;
     private float _timer = 0.0f;
+    private Light2D _light;
+    [SerializeField] private GameObject hintText;
+    [SerializeField] private AudioManager audioManager;
+
 
     // for Debug
     private float angle;
@@ -28,6 +32,7 @@ public class PlayerInputComp : MonoBehaviour {
     void Start() {
         _timer = _skillCooldown;
         _enemiesFound = new List<GameObject>();
+        _light = GetComponentInChildren<Light2D>();
     }
 
     private void OnDrawGizmos() {
@@ -43,7 +48,8 @@ public class PlayerInputComp : MonoBehaviour {
     /// </summary>
     private void LateUpdate() {
         if (!_isAbilityUsed && Input.GetMouseButtonDown(0)) {
-            _fov = GetComponentInChildren<Light2D>().pointLightOuterAngle;
+            audioManager.Play("Flashlight");
+            _fov = _light.pointLightOuterAngle;
             float angleIncrease = _fov / _numOfRaysOneSide / 2.0f;
             angle = 0.0f;
             for (int i = 0; i < _numOfRaysOneSide; i++) {
@@ -72,7 +78,10 @@ public class PlayerInputComp : MonoBehaviour {
             if (playerLight == null) {
                 Debug.Log("PLAYERABILITY LIGHT IS NULL");
             } else {
+                _light.gameObject.SetActive(false);
+                Invoke("EnableLight", 0.3f);
                 playerLight.Clap(ShrinkAngleWhenClap); // Shrink amount
+                _light.pointLightOuterAngle = playerLight.GetOuterAngle();
             }
             _isAbilityUsed = true;
 
@@ -85,7 +94,9 @@ public class PlayerInputComp : MonoBehaviour {
     private void KillEnemies() {
         for (int i = 0; i < _enemiesFound.Count; ++i) {
             Destroy(_enemiesFound[i]);
+            GameManager.EnemiesDestroyedByAttack++;
         }
+        Debug.Log("EnemiesDestroyedByAttack: " + GameManager.EnemiesDestroyedByAttack);
         _enemiesFound.Clear();
     }
 
@@ -97,5 +108,14 @@ public class PlayerInputComp : MonoBehaviour {
                 _timer = _skillCooldown;
             }
         }
+        if (_isAbilityUsed) {
+            hintText.SetActive(false);
+        } else {
+            hintText.SetActive(true);
+        }
+    }
+
+    private void EnableLight() {
+        _light.gameObject.SetActive(true);
     }
 }

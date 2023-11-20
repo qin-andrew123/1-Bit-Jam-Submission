@@ -22,13 +22,13 @@ public class EnemyGeneratorOutsideOfCamera : MonoBehaviour {
         }
     }
 
-    private void OnDrawGizmos() {
-        Gizmos.color = Color.blue;
-        Gizmos.DrawWireCube(_cameraPos, _cameraSize);
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawCube(_spawnPos, new Vector3(0.5f, 0.5f, 0f));
+    //private void OnDrawGizmos() {
+    //    Gizmos.color = Color.blue;
+    //    Gizmos.DrawWireCube(_cameraPos, _cameraSize);
+    //    Gizmos.color = Color.yellow;
+    //    Gizmos.DrawCube(_spawnPos, new Vector3(0.5f, 0.5f, 0f));
 
-    }
+    //}
 
     private void Update() {
         if (Time.time - _lastSpawnTime > _spawnInterval) {
